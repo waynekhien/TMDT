@@ -3,8 +3,17 @@ const { verify } = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || "importantsecure";
 
 const validateToken = (req, res, next) => {
-    const accessToken = req.header("accessToken");
-    
+    // Try to get token from accessToken header first (for compatibility)
+    let accessToken = req.header("accessToken");
+
+    // If not found, try Authorization header
+    if (!accessToken) {
+        const authHeader = req.header("Authorization");
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+            accessToken = authHeader.substring(7);
+        }
+    }
+
     if (!accessToken) {
         return res.status(401).json({ error: "User not logged in" });
     }

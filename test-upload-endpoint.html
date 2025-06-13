@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upload Endpoint</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Upload Endpoint</h1>
+    
+    <div class="form-group">
+        <label for="token">Access Token:</label>
+        <input type="text" id="token" placeholder="Enter your access token here" style="width: 100%;">
+        <small>You can get this from localStorage in the browser console: localStorage.getItem('accessToken')</small>
+    </div>
+    
+    <button onclick="testEndpoint()">Test Upload Endpoint</button>
+    <button onclick="testLogin()">Test Login (admin/admin123)</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testEndpoint() {
+            const token = document.getElementById('token').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!token) {
+                showResult('Please enter an access token', 'error');
+                return;
+            }
+            
+            showResult('Testing upload endpoint...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/upload/test', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(`Endpoint test successful!\n${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    showResult(`Endpoint test failed: ${data.message || data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogin() {
+            showResult('Testing login...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'admin',
+                        password: 'admin123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('token').value = data.accessToken;
+                    showResult(`Login successful!\nToken: ${data.accessToken}\nUser: ${JSON.stringify(data.user, null, 2)}`, 'success');
+                } else {
+                    showResult(`Login failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                showResult(`Network error: ${error.message}`, 'error');
+            }
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        // Auto-fill token from localStorage if available
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                document.getElementById('token').value = token;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -32,6 +32,16 @@ export const API_ENDPOINTS = {
     PROFILE: '/api/users/profile',
     CHANGE_PASSWORD: '/api/users/change-password'
   },
+  SOCIAL: {
+    POSTS: '/api/posts',
+    POSTS_FEED: '/api/posts/feed',
+    STORIES: '/api/stories',
+    STORIES_FEED: '/api/stories/feed',
+    LIKE: '/api/social/like',
+    FOLLOW: '/api/social/follow',
+    SOCIAL_COMMENTS: '/api/social-comments',
+    SUGGESTIONS: '/api/social/suggestions'
+  },
   ADMIN: {
     DASHBOARD: '/api/admin/dashboard',
     PRODUCTS: '/api/admin/products',

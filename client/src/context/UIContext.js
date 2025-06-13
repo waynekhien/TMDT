@@ -4,6 +4,8 @@ import { ToastContainer, useToast } from '../components/Toast/Toast';
 
 const UIContext = createContext();
 
+export { UIContext };
+
 export const useUI = () => {
   const context = useContext(UIContext);
   if (!context) {

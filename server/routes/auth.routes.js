@@ -46,10 +46,22 @@ router.post('/register', async (req, res) => {
 // API đăng nhập
 router.post('/login', async (req, res) => {
   try {
-      const {username, password} = req.body;
-      
-      // Tìm user theo username
-      const user = await User.findOne({ where: { username: username } });
+      const {username, email, password} = req.body;
+      const loginField = username || email;
+
+      if (!loginField || !password) {
+        return res.status(400).json({ error: "Username/email and password are required" });
+      }
+
+      // Tìm user theo username hoặc email
+      const user = await User.findOne({
+        where: {
+          [Op.or]: [
+            { username: loginField },
+            { email: loginField }
+          ]
+        }
+      });
       
       // Nếu không tìm thấy user
       if (!user) {
@@ -76,7 +88,9 @@ router.post('/login', async (req, res) => {
               id: user.id,
               username: user.username,
               email: user.email,
-              role: user.role // Thêm role vào response
+              role: user.role,
+              profilePicture: user.profilePicture,
+              fullName: user.fullName
           }
       });
   } catch (error) {

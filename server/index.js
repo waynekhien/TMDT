@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const sequelize = require('./config/db.config');
 const authRoutes = require('./routes/auth.routes');
 const productsRoutes = require('./routes/products.routes');
@@ -9,6 +10,12 @@ const adminRoutes = require('./routes/admin.routes');
 const usersRoutes = require('./routes/users.routes');
 const solanaRoutes = require('./routes/solana.routes');
 const commentsRoutes = require('./routes/comments.routes');
+// Social media routes
+const postsRoutes = require('./routes/posts.routes');
+const storiesRoutes = require('./routes/stories.routes');
+const socialRoutes = require('./routes/social.routes');
+const socialCommentsRoutes = require('./routes/socialComments.routes');
+const uploadRoutes = require('./routes/upload.routes');
 
 const app = express();
 
@@ -17,9 +24,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Request logger middleware (only for important requests)
 app.use((req, res, next) => {
-  if (req.method !== 'GET' && req.url.includes('admin')) {
+  if (req.method !== 'GET' && (req.url.includes('admin') || req.url.includes('upload'))) {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   }
   next();
@@ -46,6 +56,12 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/solana', solanaRoutes);
 app.use('/api/comments', commentsRoutes);
+// Social media routes
+app.use('/api/posts', postsRoutes);
+app.use('/api/stories', storiesRoutes);
+app.use('/api/social', socialRoutes);
+app.use('/api/social-comments', socialCommentsRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

@@ -97,4 +97,43 @@ router.put('/change-password', validateToken, async (req, res) => {
   }
 });
 
+// Get public user profile by ID
+router.get('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findByPk(userId, {
+      attributes: { exclude: ['password'] }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get public user profile by username
+router.get('/username/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const user = await User.findOne({
+      where: { username },
+      attributes: { exclude: ['password'] }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

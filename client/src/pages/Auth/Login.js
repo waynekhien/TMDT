@@ -43,13 +43,22 @@ function Login() {
                 localStorage.setItem("accessToken", response.data.accessToken);
                 localStorage.setItem("username", response.data.user.username);
                 localStorage.setItem("id", response.data.user.id.toString());
-                
+
+                // Lưu profilePicture nếu có
+                if (response.data.user.profilePicture) {
+                    localStorage.setItem("profilePicture", response.data.user.profilePicture);
+                } else {
+                    localStorage.removeItem("profilePicture");
+                }
+
                 const newAuthState = {
                     username: response.data.user.username,
                     id: response.data.user.id,
-                    status: true
+                    status: true,
+                    token: response.data.accessToken,
+                    profilePicture: response.data.user.profilePicture
                 };
-                
+
                 setAuthState(newAuthState);
                   // Chuyển hướng dựa trên role của user
                 if (response.data.user.role === 'admin') {

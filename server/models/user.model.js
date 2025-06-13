@@ -43,6 +43,38 @@ module.exports = (sequelize, DataTypes) => {
     dateOfBirth: {
       type: DataTypes.DATEONLY,
       allowNull: true
+    },
+    profilePicture: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    coverPhoto: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    website: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    isPrivate: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    followersCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    followingCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
+    postsCount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
     }
   }, {
     hooks: {
@@ -52,10 +84,12 @@ module.exports = (sequelize, DataTypes) => {
           user.password = await bcrypt.hash(user.password, salt);        }
       }
     },
-    timestamps: true // Enable createdAt and updatedAt
+    timestamps: true, // Enable createdAt and updatedAt
+    underscored: true // Use snake_case for User model to match database
   });
 
   User.associate = function(models) {
+    // E-commerce associations
     User.hasOne(models.Cart, {
       as: 'Cart',
       foreignKey: 'userId'
@@ -69,6 +103,43 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.Comment, {
       as: 'Comments',
       foreignKey: 'userId'
+    });
+
+    // Social media associations
+    User.hasMany(models.Post, {
+      as: 'Posts',
+      foreignKey: 'userId'
+    });
+
+    User.hasMany(models.Story, {
+      as: 'Stories',
+      foreignKey: 'userId'
+    });
+
+    User.hasMany(models.SocialComment, {
+      as: 'SocialComments',
+      foreignKey: 'userId'
+    });
+
+    User.hasMany(models.Like, {
+      as: 'Likes',
+      foreignKey: 'userId'
+    });
+
+    User.hasMany(models.StoryView, {
+      as: 'StoryViews',
+      foreignKey: 'userId'
+    });
+
+    // Following relationships
+    User.hasMany(models.Follow, {
+      as: 'Following',
+      foreignKey: 'followerId'
+    });
+
+    User.hasMany(models.Follow, {
+      as: 'Followers',
+      foreignKey: 'followingId'
     });
   };
 

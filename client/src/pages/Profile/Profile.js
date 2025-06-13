@@ -2,24 +2,29 @@ import React, { useState, useContext, useEffect, useCallback } from 'react';
 import { AuthContext } from '../../context/AuthContext';
 import { getUserProfile, updateUserProfile, changePassword } from '../../services/profile.service';
 import Notification from '../../components/Notification/Notification';
-import { 
-  Edit3, 
-  Save, 
-  X, 
-  Lock, 
-  User, 
-  Shield
+import {
+  Edit3,
+  Save,
+  X,
+  Lock,
+  User,
+  Shield,
+  Camera,
+  Upload,
+  Trash2
 } from 'lucide-react';
 import './Profile.css';
 
 const Profile = () => {
-  const { authState } = useContext(AuthContext);  const [profile, setProfile] = useState({
+  const { authState, setAuthState } = useContext(AuthContext);  const [profile, setProfile] = useState({
     username: '',
     email: '',
     fullName: '',
     phone: '',
     address: '',
-    dateOfBirth: ''
+    dateOfBirth: '',
+    profilePicture: '',
+    coverPhoto: ''
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -31,6 +36,7 @@ const Profile = () => {
     newPassword: '',
     confirmPassword: ''
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -42,7 +48,9 @@ const Profile = () => {
         fullName: profileData.fullName || '',
         phone: profileData.phone || '',
         address: profileData.address || '',
-        dateOfBirth: profileData.dateOfBirth ? profileData.dateOfBirth.split('T')[0] : ''
+        dateOfBirth: profileData.dateOfBirth ? profileData.dateOfBirth.split('T')[0] : '',
+        profilePicture: profileData.profilePicture || '',
+        coverPhoto: profileData.coverPhoto || ''
       });
     } catch (error) {
       showNotification('Lỗi khi tải thông tin profile: ' + (error.error || error.message), 'error');    } finally {
@@ -140,6 +148,96 @@ const Profile = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
+  const handleImageUpload = async (file, type) => {
+    try {
+      setUploadingImage(true);
+
+      const formData = new FormData();
+      formData.append(type, file);
+
+      const response = await fetch(`http://localhost:5000/api/upload/${type === 'profilePicture' ? 'profile-picture' : 'cover-photo'}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authState.token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setProfile(prev => ({
+          ...prev,
+          [type]: data[type]
+        }));
+
+        // Update AuthContext if profile picture was uploaded
+        if (type === 'profilePicture') {
+          localStorage.setItem('profilePicture', data.profilePicture);
+          setAuthState(prev => ({
+            ...prev,
+            profilePicture: data.profilePicture
+          }));
+        }
+
+        showNotification(`${type === 'profilePicture' ? 'Ảnh đại diện' : 'Ảnh bìa'} đã được cập nhật!`, 'success');
+      } else {
+        const error = await response.json();
+        showNotification(error.message || 'Lỗi khi upload ảnh', 'error');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      showNotification('Lỗi khi upload ảnh', 'error');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleDeleteImage = async (type) => {
+    try {
+      setUploadingImage(true);
+
+      const response = await fetch(`http://localhost:5000/api/upload/${type === 'profilePicture' ? 'profile-picture' : 'cover-photo'}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authState.token}`
+        }
+      });
+
+      if (response.ok) {
+        setProfile(prev => ({
+          ...prev,
+          [type]: ''
+        }));
+        showNotification(`${type === 'profilePicture' ? 'Ảnh đại diện' : 'Ảnh bìa'} đã được xóa!`, 'success');
+      } else {
+        const error = await response.json();
+        showNotification(error.message || 'Lỗi khi xóa ảnh', 'error');
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+      showNotification('Lỗi khi xóa ảnh', 'error');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleFileSelect = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        showNotification('Kích thước file không được vượt quá 5MB', 'error');
+        return;
+      }
+
+      if (!file.type.startsWith('image/')) {
+        showNotification('Chỉ chấp nhận file ảnh', 'error');
+        return;
+      }
+
+      handleImageUpload(file, type);
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa cập nhật';
     return new Date(dateString).toLocaleDateString('vi-VN');
@@ -168,48 +266,147 @@ const Profile = () => {
 
       <div className="profile-container">        <div className="profile-header">
           <div className="profile-avatar">
-            <div className="avatar-placeholder">
-              <User size={32} />
+            {profile.profilePicture ? (
+              <img
+                src={`http://localhost:5000${profile.profilePicture}`}
+                alt="Profile"
+                className="avatar-image"
+              />
+            ) : (
+              <div className="avatar-placeholder">
+                <User size={32} />
+              </div>
+            )}
+            <div className="avatar-actions">
+              <input
+                type="file"
+                id="profilePictureInput"
+                accept="image/*"
+                onChange={(e) => handleFileSelect(e, 'profilePicture')}
+                style={{ display: 'none' }}
+              />
+              <button
+                className="avatar-upload-btn"
+                onClick={() => document.getElementById('profilePictureInput').click()}
+                disabled={uploadingImage}
+                title="Thay đổi ảnh đại diện"
+              >
+                <Camera size={16} />
+              </button>
+              {profile.profilePicture && (
+                <button
+                  className="avatar-delete-btn"
+                  onClick={() => handleDeleteImage('profilePicture')}
+                  disabled={uploadingImage}
+                  title="Xóa ảnh đại diện"
+                >
+                  <Trash2 size={16} />
+                </button>
+              )}
             </div>
           </div><div className="profile-title">
             <h1>Thông tin cá nhân</h1>
             <p>Quản lý thông tin profile của bạn</p>
           </div>
-          <div className="profile-actions">
-            {!isEditing ? (
-              <button 
-                className="edit-btn"
-                onClick={() => setIsEditing(true)}
-              >
-                <Edit3 size={18} />
-                Chỉnh sửa
-              </button>
-            ) : (
-              <div className="edit-actions">
-                <button 
-                  className="save-btn"
-                  onClick={handleSave}
-                  disabled={saving}
-                >
-                  <Save size={18} />
-                  {saving ? 'Đang lưu...' : 'Lưu'}
-                </button>
-                <button 
-                  className="cancel-btn"
-                  onClick={handleCancel}
-                  disabled={saving}
-                >
-                  <X size={18} />
-                  Hủy
-                </button>
-              </div>
-            )}
-          </div>
+
         </div>
 
         <div className="profile-content">
+          {/* Cover Photo Section */}
           <div className="profile-section">
-            <h3>Thông tin cơ bản</h3>
+            <h3>Ảnh bìa</h3>
+            <div className="cover-photo-container">
+              {profile.coverPhoto ? (
+                <div className="cover-photo">
+                  <img
+                    src={`http://localhost:5000${profile.coverPhoto}`}
+                    alt="Cover"
+                    className="cover-image"
+                  />
+                  <div className="cover-actions">
+                    <input
+                      type="file"
+                      id="coverPhotoInput"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, 'coverPhoto')}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      className="cover-upload-btn"
+                      onClick={() => document.getElementById('coverPhotoInput').click()}
+                      disabled={uploadingImage}
+                    >
+                      <Camera size={16} />
+                      Thay đổi ảnh bìa
+                    </button>
+                    <button
+                      className="cover-delete-btn"
+                      onClick={() => handleDeleteImage('coverPhoto')}
+                      disabled={uploadingImage}
+                    >
+                      <Trash2 size={16} />
+                      Xóa ảnh bìa
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="cover-placeholder">
+                  <div className="cover-placeholder-content">
+                    <Upload size={32} />
+                    <p>Chưa có ảnh bìa</p>
+                    <input
+                      type="file"
+                      id="coverPhotoInputEmpty"
+                      accept="image/*"
+                      onChange={(e) => handleFileSelect(e, 'coverPhoto')}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      className="cover-upload-btn"
+                      onClick={() => document.getElementById('coverPhotoInputEmpty').click()}
+                      disabled={uploadingImage}
+                    >
+                      <Camera size={16} />
+                      Thêm ảnh bìa
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="profile-section">
+            <div className="section-header">
+              <h3>Thông tin cơ bản</h3>
+              {!isEditing ? (
+                <button
+                  className="edit-btn"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit3 size={18} />
+                  Chỉnh sửa
+                </button>
+              ) : (
+                <div className="edit-actions">
+                  <button
+                    className="save-btn"
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
+                    <Save size={18} />
+                    {saving ? 'Đang lưu...' : 'Lưu'}
+                  </button>
+                  <button
+                    className="cancel-btn"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
+                    <X size={18} />
+                    Hủy
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="profile-grid">
               <div className="form-group">
                 <label>Tên đăng nhập</label>

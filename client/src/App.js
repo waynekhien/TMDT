@@ -18,6 +18,9 @@ import Register from './pages/Auth/Register';
 import Order from './pages/Order/Order';
 import OrderDetail from './pages/Order/OrderDetail';
 import Profile from './pages/Profile/Profile';
+import UserProfile from './pages/UserProfile/UserProfile';
+import SocialFeed from './pages/Social/SocialFeed';
+import TestDropdown from './components/TestDropdown';
 
 // Admin Pages
 import AdminLayout from './pages/Admin/AdminLayout';
@@ -30,24 +33,26 @@ function App() {
   const [authState, setAuthState] = useState({
     username: "",
     id: 0,
-    status: false
+    status: false,
+    token: null
   });
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    
+
     if (token) {
       // Try to get from localStorage first
       let username = localStorage.getItem("username");
       let id = localStorage.getItem("id");
-      
+      let profilePicture = localStorage.getItem("profilePicture");
+
       // If not in localStorage, try to decode from token
       if (!username || !id) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           username = payload.username;
           id = payload.id;
-          
+
           // Save to localStorage for next time
           if (username) localStorage.setItem("username", username);
           if (id) localStorage.setItem("id", id.toString());
@@ -55,16 +60,50 @@ function App() {
           console.error('Error decoding token:', error);
         }
       }
-      
+
       const newAuthState = {
         username: username,
         id: parseInt(id) || 0,
-        status: true
+        status: true,
+        token: token,
+        profilePicture: profilePicture
       };
-      
+
       setAuthState(newAuthState);
+
+      // Fetch fresh user data to get latest profile picture
+      fetchUserProfile(token);
     }
   }, []);
+
+  const fetchUserProfile = async (token) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const userData = await response.json();
+
+        // Update localStorage with fresh data
+        if (userData.profilePicture) {
+          localStorage.setItem("profilePicture", userData.profilePicture);
+        } else {
+          localStorage.removeItem("profilePicture");
+        }
+
+        // Update auth state with fresh profile picture
+        setAuthState(prev => ({
+          ...prev,
+          profilePicture: userData.profilePicture
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ authState, setAuthState }}>
@@ -104,10 +143,22 @@ function App() {
                       <Route path="/products/page/:page" element={<Products />} />
                       <Route path="/products/:id" element={<ProductDetail />} />
 
+                      {/* Social Routes */}
+                      <Route path="/social" element={
+                        <PrivateRoute>
+                          <SocialFeed />
+                        </PrivateRoute>
+                      } />
+
                       {/* Protected Routes */}
                       <Route path="/profile" element={
                         <PrivateRoute>
                           <Profile />
+                        </PrivateRoute>
+                      } />
+                      <Route path="/user/:userId" element={
+                        <PrivateRoute>
+                          <UserProfile />
                         </PrivateRoute>
                       } />
                       <Route path="/cart" element={
