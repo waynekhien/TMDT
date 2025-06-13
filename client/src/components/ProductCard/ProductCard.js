@@ -1,5 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { ShoppingCart, Eye, Star } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { API_BASE_URL, API_ENDPOINTS } from '../../constants/api';
@@ -49,36 +51,74 @@ const ProductCard = ({ product }) => {
   };
 
   return (
-    <div className="product-card">
+    <motion.div
+      className="product-card"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      whileHover={{ y: -8 }}
+    >
       <div className="product-image">
         <img src={thumbnail} alt={title} />
         {discountPercentage > 0 && (
-          <span className="discount-badge">-{discountPercentage.toFixed(0)}%</span>
+          <motion.span
+            className="discount-badge"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring" }}
+          >
+            -{discountPercentage.toFixed(0)}%
+          </motion.span>
         )}
+        <div className="product-overlay">
+          <Link to={`/products/${id}`} className="quick-view">
+            <Eye size={20} />
+            <span>Quick View</span>
+          </Link>
+        </div>
       </div>
+
       <div className="product-info">
-        <h3>{title}</h3>
-        <p className="brand">{brand}</p>        <div className="price-container">
-          <span className="price">${formatPrice(price)}</span>
+        <div className="product-header">
+          <h3 className="product-title">{title}</h3>
+          <p className="product-brand">{brand}</p>
+        </div>
+
+        <div className="product-rating">
+          {[...Array(5)].map((_, i) => (
+            <Star
+              key={i}
+              size={16}
+              className={`star ${i < 4 ? 'filled' : ''}`}
+              fill={i < 4 ? 'currentColor' : 'none'}
+            />
+          ))}
+          <span className="rating-text">(4.0)</span>
+        </div>
+
+        <div className="price-container">
+          <span className="current-price">${formatPrice(price)}</span>
           {discountPercentage > 0 && (
             <span className="original-price">
               ${formatDiscount(price, discountPercentage)}
             </span>
           )}
-        </div>        <div className="product-actions">
-          <button 
-            className={`add-to-cart ${loading ? 'loading' : ''}`} 
+        </div>
+
+        <div className="product-actions">
+          <motion.button
+            className={`add-to-cart-btn ${loading ? 'loading' : ''}`}
             onClick={handleAddToCart}
             disabled={loading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
+            <ShoppingCart size={18} />
             {loading ? 'Adding...' : 'Add to Cart'}
-          </button>
-          <Link to={`/products/${id}`} className="view-details">
-            View Details
-          </Link>
+          </motion.button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

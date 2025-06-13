@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 import { UIProvider } from './context/UIContext';
+import { ThemeProvider } from './context/ThemeContext';
 import NavBar from './components/NavBar/NavBar';
 import Footer from './components/Footer/Footer';
 import PrivateRoute from './components/PrivateRoute';
@@ -20,7 +21,6 @@ import OrderDetail from './pages/Order/OrderDetail';
 import Profile from './pages/Profile/Profile';
 import UserProfile from './pages/UserProfile/UserProfile';
 import SocialFeed from './pages/Social/SocialFeed';
-import TestDropdown from './components/TestDropdown';
 
 // Admin Pages
 import AdminLayout from './pages/Admin/AdminLayout';
@@ -106,10 +106,11 @@ function App() {
   };
 
   return (
-    <AuthContext.Provider value={{ authState, setAuthState }}>
-      <UIProvider>
-        <div className="App">
-          <BrowserRouter>
+    <ThemeProvider>
+      <AuthContext.Provider value={{ authState, setAuthState }}>
+        <UIProvider>
+          <div className="App">
+            <BrowserRouter>
             <Routes>
               {/* Auth Routes (without navbar) */}
               <Route path="/login" element={<Login />} />
@@ -191,6 +192,7 @@ function App() {
         </div>
       </UIProvider>
     </AuthContext.Provider>
+    </ThemeProvider>
   );
 }
 

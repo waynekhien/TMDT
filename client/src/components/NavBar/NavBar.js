@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import ThemeToggle from '../UI/ThemeToggle';
 import {
   ShoppingBag,
   ShoppingCart,
@@ -89,7 +90,9 @@ const NavBar = () => {
               <Link to="/cart" onClick={() => setIsMenuOpen(false)}>
                 <ShoppingCart size={18} /> Cart
               </Link>
-              
+
+              <ThemeToggle />
+
               <div className="user-menu-container" ref={userMenuRef}>
                 <div className="user-avatar" onClick={toggleUserMenu}>
                   {authState.profilePicture ? (

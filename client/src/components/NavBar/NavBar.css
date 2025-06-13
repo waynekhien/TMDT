@@ -13,25 +13,35 @@
     top: 0;
     left: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 100;
     height: 70px;
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    border-bottom: 2px solid rgba(102, 126, 234, 0.2);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.08);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    
-    /* Đảm bảo navbar luôn ở trên cùng và không bị overlap */
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     width: 100%;
     max-width: 100vw;
     box-sizing: border-box;
 }
 
+/* Dark mode navbar */
+.dark .navbar {
+    background: rgba(15, 23, 42, 0.95);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+}
+
 /* Scrolled state */
 .navbar.scrolled {
     background: rgba(255, 255, 255, 0.98);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+}
+
+.dark .navbar.scrolled {
+    background: rgba(15, 23, 42, 0.98);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
 }
 
 /* Hamburger menu */
@@ -41,7 +51,7 @@
     cursor: pointer;
     padding: 16px 20px;
     position: relative;
-    z-index: 1001;
+    z-index: 101;
     transition: all 0.3s ease;
 }
 
@@ -106,6 +116,13 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dark .links a {
+    color: #e2e8f0;
 }
 
 /* Link hover effect */
@@ -328,7 +345,7 @@
         align-items: center;
         gap: 40px;
         transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        z-index: 999;
+        z-index: 99;
     }
     
     .links.active {
@@ -518,7 +535,7 @@
 .user-menu-container {
     position: relative;
     display: inline-block;
-    z-index: 10000;
+    z-index: 110;
 }
 
 .user-avatar {
@@ -563,7 +580,7 @@
     border-radius: 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
     min-width: 200px;
-    z-index: 99999;
+    z-index: 111;
     overflow: hidden;
     border: 2px solid #667eea;
     animation: dropdownFadeIn 0.3s ease-out;
@@ -639,7 +656,7 @@
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     min-width: 180px;
-    z-index: 9999;
+    z-index: 111;
     padding: 10px 0;
 }
 

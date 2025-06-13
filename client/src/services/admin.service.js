@@ -26,12 +26,18 @@ class AdminService {
         throw error.response?.data || error;
       }
     );
-  }  // Dashboard & Statistics
+  }
+
+  // Dashboard & Statistics
   async getDashboardOverview() {
     return this.api.get('/dashboard/overview');
-  }async getRevenueStats(period = 'month') {
+  }
+
+  async getRevenueStats(period = 'month') {
     return this.api.get(`/statistics/revenue?period=${period}`);
-  }  async getOrderStats(period = 'month') {
+  }
+
+  async getOrderStats(period = 'month') {
     return this.api.get(`/statistics/orders?period=${period}`);
   }
   async getProductStats() {
@@ -158,6 +164,7 @@ class AdminService {
   async getLogs() {
     return this.api.get('/logs');
   }
+
   // Utility methods
   formatCurrency(amount) {
     return new Intl.NumberFormat('en-US', {
